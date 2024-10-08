@@ -1,6 +1,8 @@
 from bs4 import BeautifulSoup
 import requests
 from pathlib import Path
+from concurrent.futures import ThreadPoolExecutor
+
 
 
 url = "https://huggingface.co/papers"
@@ -22,6 +24,7 @@ def download_arxiv_pdf(arxiv_id: str, dir: str = None):
         dir = PDF_DIR
     filename = dir / f"{arxiv_id}.pdf"
     download_pdf(arxiv_pdf_url, filename=filename)
+    return filename.as_posix()
 
 # def get_paper_info_arxiv_api(arxiv_id):
 #     arxiv_api_url = f"http://export.arxiv.org/api/query?id_list={arxiv_id}"
@@ -45,6 +48,12 @@ def get_paper_info(arxiv_id: str):
     return paper_info
 
 
+def fetch_paper_arxiv(arxiv_id: str):
+    paper_info = get_paper_info(arxiv_id)
+    filename_local = download_arxiv_pdf(arxiv_id)
+    paper_info['filename_local'] = filename_local
+    return paper_info
+
 
 def fetch_papers_hf():
     page = requests.get(url)
@@ -58,18 +67,16 @@ def fetch_papers_hf():
         arxiv_ids.append(arxiv_id)
 
     
-    for arxiv_id in arxiv_ids:
-        paper_info = get_paper_info(arxiv_id)
-        print(paper_info)
-        _ = download_arxiv_pdf(arxiv_id)
-
-    return arxiv_ids
-
+    with ThreadPoolExecutor(max_workers=8) as executor:
+        results = executor.map(fetch_paper_arxiv, arxiv_ids)
+    
+    return results
 
 
 
 def main():
-    fetch_papers_hf()
+    results = fetch_papers_hf()
+    print(results)
 
 
 if __name__ == "__main__":
