@@ -2,10 +2,21 @@ from bs4 import BeautifulSoup
 import requests
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor
+from tqdm import tqdm
+
+from dataclasses import dataclass
+
+@dataclass
+class Paper:
+    title: str
+    authors: str
+    url: str
+    filepath_local: str | None = None
+    summary: str | None = None
+    tags: list[str] | None = None
 
 
-
-url = "https://huggingface.co/papers"
+hf_url = "https://huggingface.co/papers"
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 
@@ -35,28 +46,25 @@ def download_arxiv_pdf(arxiv_id: str, dir: str = None):
 #     authors = [author.find('name').text for author in authors]
 #     return title, authors
 
-def get_paper_info(arxiv_id: str):
+def get_paper_info(arxiv_id: str) -> Paper:
     arxiv_url = f"https://arxiv.org/abs/{arxiv_id}"
     response = requests.get(arxiv_url)
     soup = BeautifulSoup(response.content, 'xml')
     title = soup.find('h1', class_='title mathjax').text.replace("Title:", "").strip()
     authors = soup.find('div', class_='authors').text.replace("Authors:", "").strip()
-    paper_info = {
-        'title': title,
-        'authors': authors
-    }
-    return paper_info
+    paper = Paper(url=arxiv_url, title=title, authors=authors)
+    return paper
 
 
 def fetch_paper_arxiv(arxiv_id: str):
-    paper_info = get_paper_info(arxiv_id)
-    filename_local = download_arxiv_pdf(arxiv_id)
-    paper_info['filename_local'] = filename_local
-    return paper_info
+    paper = get_paper_info(arxiv_id)
+    filepath_local = download_arxiv_pdf(arxiv_id)
+    paper.filepath_local = filepath_local
+    return paper
 
 
 def fetch_papers_hf():
-    page = requests.get(url)
+    page = requests.get(hf_url)
     soup = BeautifulSoup(page.content, 'html.parser')
 
     arxiv_ids = []
@@ -68,9 +76,13 @@ def fetch_papers_hf():
 
     
     with ThreadPoolExecutor(max_workers=8) as executor:
-        results = executor.map(fetch_paper_arxiv, arxiv_ids)
+        papers = list(tqdm(
+            executor.map(fetch_paper_arxiv, arxiv_ids),
+            total=len(arxiv_ids),
+            desc="Fetching papers"
+        ))
     
-    return results
+    return papers
 
 
 
