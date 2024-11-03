@@ -4,16 +4,7 @@ from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor
 from tqdm import tqdm
 
-from dataclasses import dataclass
-
-@dataclass
-class Paper:
-    title: str
-    authors: str
-    url: str
-    filepath_local: str | None = None
-    summary: str | None = None
-    tags: list[str] | None = None
+from .models import Paper
 
 
 hf_url = "https://huggingface.co/papers"

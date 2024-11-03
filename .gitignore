@@ -1,3 +1,4 @@
 **env
 papers/*
 notebooks/*
+**__pycache__**
