@@ -1159,6 +1159,31 @@ files = [
 six = ">=1.5"
 
 [[package]]
+name = "python-telegram-bot"
+version = "21.6"
+description = "We have made you a wrapper you can't refuse"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "python_telegram_bot-21.6-py3-none-any.whl", hash = "sha256:f2d6431bf154a53f40cdfc6c1d492a66102c0e4938709f6d8202bcd951c840cb"},
+    {file = "python_telegram_bot-21.6.tar.gz", hash = "sha256:8b2b37836c3ff9c2924e990474a1c4731df21b1668acebff5099f475666426c6"},
+]
+
+[package.dependencies]
+httpx = ">=0.27,<1.0"
+
+[package.extras]
+all = ["aiolimiter (>=1.1.0,<1.2.0)", "apscheduler (>=3.10.4,<3.11.0)", "cachetools (>=5.3.3,<5.6.0)", "cffi (>=1.17.0rc1)", "cryptography (>=39.0.1)", "httpx[http2]", "httpx[socks]", "pytz (>=2018.6)", "tornado (>=6.4,<7.0)"]
+callback-data = ["cachetools (>=5.3.3,<5.6.0)"]
+ext = ["aiolimiter (>=1.1.0,<1.2.0)", "apscheduler (>=3.10.4,<3.11.0)", "cachetools (>=5.3.3,<5.6.0)", "pytz (>=2018.6)", "tornado (>=6.4,<7.0)"]
+http2 = ["httpx[http2]"]
+job-queue = ["apscheduler (>=3.10.4,<3.11.0)", "pytz (>=2018.6)"]
+passport = ["cffi (>=1.17.0rc1)", "cryptography (>=39.0.1)"]
+rate-limiter = ["aiolimiter (>=1.1.0,<1.2.0)"]
+socks = ["httpx[socks]"]
+webhooks = ["tornado (>=6.4,<7.0)"]
+
+[[package]]
 name = "pywin32"
 version = "307"
 description = "Python for Window Extensions"
@@ -1476,4 +1501,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "6ec9e80bc9fd14892356f97e408b701bb73869d7f6f093e216cbf36d3dbd1aa2"
+content-hash = "7bfc180f7bdc4f2a423f39902deffa89ac2e55032c1efa4b4ba0935b7d6e3d76"

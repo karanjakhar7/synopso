@@ -5,14 +5,20 @@ from .summarizers.summarize import summarize_paper_with_oai
 from .models import Paper
 from typing import List
 from tqdm import tqdm
+from .share.telegram import send_message_on_telegram
 
 
 pdf_parser = PDFParser("pypdf")
 
+
 async def summarize_batch(papers: List[Paper], batch_size: int = 5):
     """Process papers in batches asynchronously"""
     total_batches = (len(papers) + batch_size - 1) // batch_size  # ceiling division
-    for i in tqdm(range(0, len(papers), batch_size), total=total_batches, desc="Processing batches"):
+    for i in tqdm(
+        range(0, len(papers), batch_size),
+        total=total_batches,
+        desc="Processing batches",
+    ):
         batch = papers[i : i + batch_size]
         tasks = [summarize_paper_with_oai(paper) for paper in batch]
         summaries = await asyncio.gather(*tasks)
@@ -22,9 +28,17 @@ async def summarize_batch(papers: List[Paper], batch_size: int = 5):
 
 async def main():
     papers = fetch_papers_hf()
+
+    for paper in papers:
+        paper.text = pdf_parser.extract_text(paper.filepath_local)
+
     await summarize_batch(papers)
 
-    # TODO: Save papers to database or file or do something with them
+    for paper in papers:
+        content = (
+            f"*{paper.title}*\n{paper.authors}\n\n{paper.summary}\nLink: {paper.url}"
+        )
+        await send_message_on_telegram(content)
 
 
 def run_main():
@@ -46,14 +60,18 @@ def test():
     paper.summary = asyncio.run(summarize_paper_with_oai(paper))
     print(paper.summary)
 
+    content = f"*{paper.title}*\n{paper.authors}\n\n{paper.summary}\nLink: {paper.url}"
+    asyncio.run(send_message_on_telegram(content))
+
 
 if __name__ == "__main__":
     from argparse import ArgumentParser
+
     arg_parser = ArgumentParser()
     arg_parser.add_argument("--test", action="store_true")
 
     args = arg_parser.parse_args()  # This line is missing in your code
-    
+
     if args.test:
         test()
     else:
