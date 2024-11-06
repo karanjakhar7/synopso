@@ -12,5 +12,5 @@ async def send_message_on_telegram(content: str):
             text=content,
             parse_mode=telegram.constants.ParseMode.MARKDOWN,
         )
-    except telegram.error.TelegramError:
-        print("Failed to send message to Telegram")
+    except telegram.error.TelegramError as e:
+        print(f"Failed to send message to Telegram: {e}")
