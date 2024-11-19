@@ -1,23 +1,19 @@
-[tool.poetry]
+[project]
 name = "synopso"
 version = "0.1.0"
-description = ""
-authors = ["Karan Jakhar <rockingkjakhar@gmail.com>"]
+description = "Add your description here"
 readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "beautifulsoup4>=4.12.3",
+    "lxml>=5.3.0",
+    "openai>=1.54.5",
+    "pypdf>=5.1.0",
+    "python-telegram-bot>=21.7",
+    "requests>=2.32.3",
+]
 
-[tool.poetry.dependencies]
-python = "^3.11"
-beautifulsoup4 = "^4.12.3"
-requests = "^2.32.3"
-lxml = "^5.3.0"
-openai = "^1.51.2"
-pypdf = "^5.1.0"
-python-telegram-bot = "^21.6"
-
-
-[tool.poetry.group.dev.dependencies]
-ipykernel = "^6.29.5"
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+[dependency-groups]
+dev = [
+    "ipykernel>=6.29.5",
+]
