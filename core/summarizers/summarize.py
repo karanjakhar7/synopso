@@ -1,18 +1,20 @@
 import os
+
 from openai import AsyncAzureOpenAI
-from ..templates.summarize_paper import summarize_system_message, summarize_user_message
+
 from ..models import Paper
+from ..templates.summarize_paper import summarize_system_message, summarize_user_message
 
 client = AsyncAzureOpenAI(
     api_key=os.getenv("AZURE_OPENAI_API_KEY"),
-    api_version="2024-07-01-preview",
+    api_version=os.getenv("AZURE_OPENAI_API_VERSION"),
     azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
 )
 
 
 async def summarize_paper_with_oai(paper: Paper):
     completion = await client.chat.completions.create(
-        model="gpt-4o",
+        model="gpt-4o-mini-2024-07-18",
         messages=[
             {"role": "system", "content": summarize_system_message},
             {
@@ -23,5 +25,7 @@ async def summarize_paper_with_oai(paper: Paper):
             },
         ],
     )
+
+    return completion.choices[0].message.content
 
     return completion.choices[0].message.content
