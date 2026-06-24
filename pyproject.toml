@@ -1,17 +1,20 @@
 [project]
 name = "synopso"
 version = "0.1.0"
-description = "Add your description here"
+description = "Daily AI research paper summarizer — HuggingFace Papers → any LLM via LiteLLM → Telegram"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "beautifulsoup4>=4.12.3",
+    "litellm>=1.89.3",
     "lxml>=5.3.0",
-    "openai>=1.54.5",
     "pypdf>=5.1.0",
     "python-telegram-bot>=21.7",
     "requests>=2.32.3",
 ]
+
+[project.scripts]
+synopso = "core.main:run_main"
 
 [dependency-groups]
 dev = [
