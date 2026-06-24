@@ -1,7 +1,8 @@
 import asyncio
+from pathlib import Path
 from .fetch_papers import fetch_papers_hf
 from .parsers.pdf_parser import PDFParser
-from .summarizers.summarize import summarize_paper_with_oai
+from .summarizers.summarize import summarize_paper_with_ai
 from .models import Paper
 from typing import List
 from tqdm import tqdm
@@ -13,20 +14,27 @@ pdf_parser = PDFParser("pypdf")
 
 async def summarize_batch(papers: List[Paper], batch_size: int = 5):
     """Process papers in batches asynchronously"""
-    total_batches = (len(papers) + batch_size - 1) // batch_size  # ceiling division
+    total_batches = (len(papers) + batch_size - 1) // batch_size
     for i in tqdm(
         range(0, len(papers), batch_size),
         total=total_batches,
         desc="Processing batches",
     ):
         batch = papers[i : i + batch_size]
-        tasks = [summarize_paper_with_oai(paper) for paper in batch]
+        tasks = [summarize_paper_with_ai(paper) for paper in batch]
         summaries = await asyncio.gather(*tasks)
         for paper, summary in zip(batch, summaries):
             paper.summary = summary
 
 
-async def main():
+def cleanup_papers(papers: List[Paper]):
+    for paper in papers:
+        path = Path(paper.filepath_local)
+        if path.exists():
+            path.unlink()
+
+
+async def main(cleanup: bool = False):
     papers = fetch_papers_hf()
 
     for paper in papers:
@@ -40,9 +48,12 @@ async def main():
         )
         await send_message_on_telegram(content)
 
+    if cleanup:
+        cleanup_papers(papers)
 
-def run_main():
-    asyncio.run(main())
+
+def run_main(cleanup: bool = False):
+    asyncio.run(main(cleanup=cleanup))
 
 
 def test():
@@ -57,7 +68,7 @@ def test():
         filepath_local=TEST_DIR / "test.pdf",
     )
     paper.text = pdf_parser.extract_text(paper.filepath_local)
-    paper.summary = asyncio.run(summarize_paper_with_oai(paper))
+    paper.summary = asyncio.run(summarize_paper_with_ai(paper))
     print(paper.summary)
 
     content = f"*{paper.title}*\n{paper.authors}\n\n{paper.summary}\nLink: {paper.url}"
@@ -69,10 +80,11 @@ if __name__ == "__main__":
 
     arg_parser = ArgumentParser()
     arg_parser.add_argument("--test", action="store_true")
+    arg_parser.add_argument("--cleanup", action="store_true", help="Delete downloaded PDFs after processing")
 
-    args = arg_parser.parse_args()  # This line is missing in your code
+    args = arg_parser.parse_args()
 
     if args.test:
         test()
     else:
-        run_main()
+        run_main(cleanup=args.cleanup)

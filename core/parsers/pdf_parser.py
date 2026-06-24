@@ -12,7 +12,7 @@ class PDFParser:
         for i in range(len(reader.pages)):
             page = reader.pages[i]
             text += "\n" + page.extract_text()
-        return text
+        return text.encode("utf-8", errors="surrogatepass").decode("utf-8", errors="replace")
 
     def extract_text(self, pdf_path):
         if self.parser == "pypdf":
