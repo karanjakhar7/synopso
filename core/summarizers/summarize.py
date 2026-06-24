@@ -27,17 +27,21 @@ _router = Router(
 _RETRY_DELAY_RE = re.compile(r"retry in (\d+(?:\.\d+)?)s", re.IGNORECASE)
 
 
+_MAX_WAIT = 60.0
+
+
 class _SmartWait(wait_base):
-    """Honour the provider's retry-after for rate limits; exponential backoff otherwise."""
+    """Exponential backoff; for rate limits uses provider's suggested delay as the base."""
 
     def __call__(self, retry_state) -> float:
+        attempt = retry_state.attempt_number  # 1-based
         exc = retry_state.outcome.exception()
         if isinstance(exc, RateLimitError):
-            m = _RETRY_DELAY_RE.search(str(exc)) # tries to find the retry delay in the error message
-            if m:
-                return float(m.group(1)) + 2
-            return 60.0
-        return min(2 ** retry_state.attempt_number, 60.0)
+            m = _RETRY_DELAY_RE.search(str(exc))
+            base = float(m.group(1)) if m else 20.0
+            # exponential growth on top of the provider's own delay
+            return min(base * (2 ** (attempt - 1)), _MAX_WAIT)
+        return min(2.0 ** attempt, _MAX_WAIT)
 
 
 @retry(
